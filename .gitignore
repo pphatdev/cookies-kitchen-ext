@@ -3,6 +3,9 @@ dist/
 *.log
 .DS_Store
 
+# Built CSS
+popup.css
+
 # AI
 .claude/
 .agent/
