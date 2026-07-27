@@ -1,0 +1,19 @@
+{
+  "name": "cookies-kitchen",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Chrome/Edge/Brave/Firefox extension (MV3) to export and import browser cookies as JSON.",
+  "type": "module",
+  "scripts": {
+    "build:css": "tailwindcss -i ./src/styles/input.css -o ./popup.css",
+    "watch:css": "tailwindcss -i ./src/styles/input.css -o ./popup.css --watch",
+    "build:chromium": "npm run build:css && node build.mjs chromium",
+    "build:firefox": "npm run build:css && node build.mjs firefox",
+    "build:safari": "npm run build:css && node build.mjs safari",
+    "build": "npm run build:css && node build.mjs all"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.0.0",
+    "tailwindcss": "^4.0.0"
+  }
+}

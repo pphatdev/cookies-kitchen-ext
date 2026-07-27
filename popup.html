@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Cookies Kitchen</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Poppins:wght@400;500;600&display=swap" />
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body data-theme="auto">
+  <header class="flex items-center justify-between mb-2.5">
+    <div class="flex items-center gap-2">
+      <svg class="text-primary shrink-0" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+        <path fill="currentColor" d="M12 2a10 10 0 1 0 10 10 5 5 0 0 1-5-5 5 5 0 0 1-5-5Zm-3 6a1.5 1.5 0 1 1-1.5 1.5A1.5 1.5 0 0 1 9 8Zm7 8a1.5 1.5 0 1 1 1.5-1.5A1.5 1.5 0 0 1 16 16Zm-6 2a1.5 1.5 0 1 1 1.5-1.5A1.5 1.5 0 0 1 10 18Zm2-6a1 1 0 1 1 1-1 1 1 0 0 1-1 1Z"/>
+      </svg>
+      <span class="font-mono text-[13px] font-semibold tracking-tight">cookies-kitchen</span>
+      <span class="font-mono text-[10px] text-muted-foreground px-1.5 py-0.5 border border-border rounded-full">v1.0.0</span>
+    </div>
+    <button id="theme-toggle" class="bg-transparent border border-border rounded-lg text-muted-foreground p-1.5 inline-flex items-center justify-center hover:text-foreground hover:bg-muted transition-colors" title="Toggle theme" aria-label="Toggle theme">
+      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+        <path fill="currentColor" d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.4 5.4 0 0 1-4.9 3.1 5.4 5.4 0 0 1-5.4-5.4 5.4 5.4 0 0 1 3.1-4.9C13.24 3.04 12.62 3 12 3Z"/>
+      </svg>
+    </button>
+  </header>
+
+  <div class="font-mono text-xs bg-card text-card-foreground border border-border rounded-lg px-2.5 py-2 flex items-center gap-1.5 overflow-hidden whitespace-nowrap">
+    <span class="text-primary shrink-0">~cookies</span>
+    <span class="text-muted-foreground shrink-0">$</span>
+    <span id="site-info" class="overflow-hidden text-ellipsis">loading&hellip;</span>
+  </div>
+
+  <section class="grid grid-cols-3 gap-1.5 mt-2.5" aria-label="Cookie counts">
+    <button type="button" class="stat bg-card text-card-foreground border border-border rounded-lg py-3 flex flex-col items-center gap-1 cursor-pointer hover:border-primary/50 active:scale-[0.98] transition-all" data-scope="current" title="Cookies for current site">
+      <span class="font-mono text-[22px] font-semibold leading-none tracking-tight" id="count-current">&mdash;</span>
+      <span class="font-mono text-[10px] text-muted-foreground uppercase tracking-widest">site</span>
+    </button>
+    <button type="button" class="stat bg-card text-card-foreground border border-border rounded-lg py-3 flex flex-col items-center gap-1 cursor-pointer hover:border-primary/50 active:scale-[0.98] transition-all" data-scope="domain" title="Cookies for entire domain">
+      <span class="font-mono text-[22px] font-semibold leading-none tracking-tight" id="count-domain">&mdash;</span>
+      <span class="font-mono text-[10px] text-muted-foreground uppercase tracking-widest">domain</span>
+    </button>
+    <button type="button" class="stat bg-card text-card-foreground border border-border rounded-lg py-3 flex flex-col items-center gap-1 cursor-pointer hover:border-primary/50 active:scale-[0.98] transition-all" data-scope="all" title="All cookies (all stores)">
+      <span class="font-mono text-[22px] font-semibold leading-none tracking-tight" id="count-all">&mdash;</span>
+      <span class="font-mono text-[10px] text-muted-foreground uppercase tracking-widest">all</span>
+    </button>
+  </section>
+
+  <section class="bg-card text-card-foreground border border-border rounded-lg p-3 mt-2.5">
+    <div class="flex items-center gap-2 mb-2.5">
+      <span class="font-mono text-[10px] text-muted-foreground tracking-widest">01</span>
+      <h2 class="text-xs font-semibold m-0 uppercase tracking-widest text-muted-foreground">Scope</h2>
+    </div>
+    <div class="flex flex-col gap-0.5">
+      <label class="flex items-center gap-2 px-1 py-1.5 rounded-md cursor-pointer text-[13px] hover:bg-muted transition-colors">
+        <input type="radio" name="scope" value="current" class="accent-primary m-0 cursor-pointer" checked />
+        <span>Current site only</span>
+      </label>
+      <label class="flex items-center gap-2 px-1 py-1.5 rounded-md cursor-pointer text-[13px] hover:bg-muted transition-colors">
+        <input type="radio" name="scope" value="domain" class="accent-primary m-0 cursor-pointer" />
+        <span>Entire domain <em class="not-italic text-[11px] text-muted-foreground ml-1">incl. subdomains</em></span>
+      </label>
+      <label class="flex items-center gap-2 px-1 py-1.5 rounded-md cursor-pointer text-[13px] hover:bg-muted transition-colors">
+        <input type="radio" name="scope" value="all" class="accent-primary m-0 cursor-pointer" />
+        <span>All cookies <em class="not-italic text-[11px] text-muted-foreground ml-1">all sites</em></span>
+      </label>
+    </div>
+  </section>
+
+  <section class="bg-card text-card-foreground border border-border rounded-lg p-3 mt-2.5">
+    <div class="flex items-center gap-2 mb-2.5">
+      <span class="font-mono text-[10px] text-muted-foreground tracking-widest">02</span>
+      <h2 class="text-xs font-semibold m-0 uppercase tracking-widest text-muted-foreground">Export</h2>
+    </div>
+    <div class="grid grid-cols-2 gap-1.5">
+      <button id="export-btn" class="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-md text-[13px] font-medium bg-primary text-primary-foreground border border-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer">
+        <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14"/></svg>
+        Download JSON
+      </button>
+      <button id="copy-btn" class="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-md text-[13px] font-medium bg-card text-foreground border border-border hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer">
+        <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" stroke="currentColor" stroke-width="2" fill="none"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+        Copy
+      </button>
+    </div>
+  </section>
+
+  <section class="bg-card text-card-foreground border border-border rounded-lg p-3 mt-2.5">
+    <div class="flex items-center gap-2 mb-2.5">
+      <span class="font-mono text-[10px] text-muted-foreground tracking-widest">03</span>
+      <h2 class="text-xs font-semibold m-0 uppercase tracking-widest text-muted-foreground">Import</h2>
+    </div>
+    <label for="import-file" class="w-full mb-1.5 inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-md text-[13px] font-medium bg-card text-foreground border border-border hover:bg-muted transition-colors cursor-pointer">
+      <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 21V9m0 0-4 4m4-4 4 4M5 3h14"/></svg>
+      Choose file&hellip;
+    </label>
+    <input id="import-file" type="file" accept="application/json,.json" hidden />
+    <label class="flex items-center gap-2 px-1 py-1.5 rounded-md cursor-pointer text-[13px] hover:bg-muted transition-colors">
+      <input type="checkbox" id="overwrite" class="accent-primary m-0 cursor-pointer" checked />
+      <span>Overwrite existing cookies</span>
+    </label>
+  </section>
+
+  <section class="bg-card text-card-foreground border border-destructive/40 rounded-lg p-3 mt-2.5">
+    <div class="flex items-center gap-2 mb-2.5">
+      <span class="font-mono text-[10px] text-muted-foreground tracking-widest">04</span>
+      <h2 class="text-xs font-semibold m-0 uppercase tracking-widest text-muted-foreground">Danger zone</h2>
+    </div>
+    <button id="clear-btn" class="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-md text-[13px] font-medium bg-transparent text-destructive border border-destructive/40 hover:bg-destructive/10 hover:border-destructive disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer">
+      <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M4 7h16M10 11v6m4-6v6M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13M9 7V4h6v3"/></svg>
+      Delete cookies (scope)
+    </button>
+  </section>
+
+  <details class="advanced mt-2.5 px-3 py-2.5 bg-card text-card-foreground border border-border rounded-lg text-xs">
+    <summary class="cursor-pointer text-muted-foreground font-mono text-[11px] tracking-widest uppercase outline-none">Advanced</summary>
+    <label class="mt-1.5 flex items-center gap-2 px-1 py-1.5 rounded-md cursor-pointer text-[13px] hover:bg-muted transition-colors">
+      <input type="checkbox" id="pretty" class="accent-primary m-0 cursor-pointer" checked />
+      <span>Pretty-print JSON</span>
+    </label>
+  </details>
+
+  <div id="status" class="status mt-2.5 px-2.5 py-2 bg-card border border-border border-l-[3px] rounded-md font-mono text-[11px] flex gap-1.5 items-start min-h-8 text-muted-foreground" role="status" aria-live="polite" data-kind="idle">
+    <span class="status-caret text-muted-foreground shrink-0">&gt;</span>
+    <span id="status-msg" class="text-card-foreground break-words">ready</span>
+  </div>
+
+  <script type="module" src="src/popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,147 @@
+@import "tailwindcss";
+
+/* Tell Tailwind v4 which files to scan for class names */
+@source "../../popup.html";
+@source "../popup.js";
+@source "../ui.js";
+
+/* Map Tailwind color/font/radius tokens to the CSS vars below,
+   so bg-primary, text-muted-foreground, etc. respond to theme changes. */
+@theme inline {
+    --color-background: hsl(var(--background));
+    --color-foreground: hsl(var(--foreground));
+    --color-card: hsl(var(--card));
+    --color-card-foreground: hsl(var(--card-foreground));
+    --color-primary: hsl(var(--primary));
+    --color-primary-foreground: hsl(var(--primary-foreground));
+    --color-muted: hsl(var(--muted));
+    --color-muted-foreground: hsl(var(--muted-foreground));
+    --color-border: hsl(var(--border));
+    --color-destructive: hsl(var(--destructive));
+    --color-info: hsl(var(--info));
+
+    --font-sans: "Poppins", "Roboto", "Kantumruy Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-mono: "JetBrains Mono", "SF Mono", "Cascadia Code", ui-monospace, Menlo, Consolas, monospace;
+
+    --radius: 0.5rem;
+}
+
+/* pphat.me design tokens — HSL triplets so we can do primary/0.08 alpha */
+@layer base {
+    :root {
+        --background: 0 0% 100%;
+        --foreground: 240 10% 11%;
+        --card: 0 0% 100%;
+        --card-foreground: 240 10% 3.9%;
+        --primary: 163 96% 25%;
+        --primary-foreground: 0 0% 98%;
+        --muted: 240 4.8% 95.9%;
+        --muted-foreground: 240 3.8% 46.1%;
+        --border: 240 5.9% 90%;
+        --destructive: 0 84.2% 60.2%;
+        --info: 217 91% 60%;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --background: 240 10% 11%;
+            --foreground: 0 0% 98%;
+            --card: 240 10% 3.9%;
+            --card-foreground: 0 0% 98%;
+            --muted: 240 3.7% 15.9%;
+            --muted-foreground: 240 5% 64.9%;
+            --border: 240 3.7% 15.9%;
+            --destructive: 0 62.8% 50%;
+        }
+    }
+
+    body[data-theme="light"] {
+        --background: 0 0% 100%;
+        --foreground: 240 10% 11%;
+        --card: 0 0% 100%;
+        --card-foreground: 240 10% 3.9%;
+        --muted: 240 4.8% 95.9%;
+        --muted-foreground: 240 3.8% 46.1%;
+        --border: 240 5.9% 90%;
+        --destructive: 0 84.2% 60.2%;
+    }
+
+    body[data-theme="dark"] {
+        --background: 240 10% 11%;
+        --foreground: 0 0% 98%;
+        --card: 240 10% 3.9%;
+        --card-foreground: 0 0% 98%;
+        --muted: 240 3.7% 15.9%;
+        --muted-foreground: 240 5% 64.9%;
+        --border: 240 3.7% 15.9%;
+        --destructive: 0 62.8% 50%;
+    }
+
+    html,
+    body {
+        margin: 0;
+        padding: 0;
+        border-radius: 14px;
+        overflow: hidden;
+    }
+
+    html {
+        background: hsl(var(--background));
+    }
+
+    body {
+        width: 360px;
+        padding: 14px;
+        background: hsl(var(--background));
+        color: hsl(var(--foreground));
+        border: 1px solid hsl(var(--border));
+        font-family: var(--font-sans);
+        font-size: 13px;
+        line-height: 1.45;
+    }
+}
+
+/* Small bits that are painful as pure utilities */
+@layer components {
+    .status[data-kind="ok"] {
+        border-left-color: hsl(var(--primary));
+    }
+    .status[data-kind="ok"] .status-caret {
+        color: hsl(var(--primary));
+    }
+    .status[data-kind="err"] {
+        border-left-color: hsl(var(--destructive));
+    }
+    .status[data-kind="err"] .status-caret {
+        color: hsl(var(--destructive));
+    }
+    .status[data-kind="info"] {
+        border-left-color: hsl(var(--info));
+    }
+    .status[data-kind="info"] .status-caret {
+        color: hsl(var(--info));
+    }
+
+    .stat[data-active="true"] {
+        border-color: hsl(var(--primary));
+        background: hsl(var(--primary) / 0.08);
+    }
+
+    /* Details disclosure marker */
+    details.advanced summary {
+        list-style: none;
+    }
+    details.advanced summary::-webkit-details-marker {
+        display: none;
+    }
+    details.advanced summary::before {
+        content: "\25B8";
+        display: inline-block;
+        margin-right: 6px;
+        transition: transform 0.15s;
+        color: hsl(var(--muted-foreground));
+    }
+    details.advanced[open] summary::before {
+        transform: rotate(90deg);
+    }
+}
