@@ -53,7 +53,7 @@ Unzip and follow the per-browser install steps below. No `npm install` required 
 
 Every PR and every push to `main` runs [`.github/workflows/ci.yml`](.github/workflows/ci.yml):
 
-1. Installs deps against Node 18 and Node 20
+1. Installs deps against Node 20, 22, and 24 (matrix)
 2. `npm run validate` — checks both manifests parse, have MV3 shape, list `cookies`+`host_permissions`, and every referenced file exists
 3. `npm run build` — Tailwind CSS + all three targets
 4. `web-ext lint` on the Firefox build
@@ -77,12 +77,34 @@ git push origin v1.0.1
 
 The [`Release` workflow](.github/workflows/release.yml) fires on tags matching `v*`, builds Chromium/Firefox/Safari artifacts, syncs the manifest version to the tag, computes SHA-256, and publishes them as GitHub Release assets with auto-generated release notes. It can also be triggered manually from the Actions tab.
 
+## Node.js support policy
+
+| Version | Role in this project | Notes |
+|---|---|---|
+| **Node 20** (Iron LTS) | Supported minimum | End of Maintenance LTS April 2026 |
+| **Node 22** (Jod LTS) | **Recommended** — pinned in `.nvmrc` and `.node-version`; used by the release workflow | Active LTS |
+| **Node 24** | Supported | Current line |
+| Node 18 and older | **Not supported** | EOL |
+| Odd-numbered non-LTS (23, 25, …) | Not tested | May work; no support |
+
+Enforcement:
+
+- [`package.json` `engines`](package.json) declares `node: ^20 || ^22 || ^24`, `npm: >=10`
+- [`.npmrc`](.npmrc) sets `engine-strict=true` so `npm install` on an unsupported Node **fails** rather than warns
+- [`.nvmrc`](.nvmrc) / [`.node-version`](.node-version) pin the recommended local version (22) for `nvm`, `fnm`, `volta`, and `asdf`
+- CI runs the full test matrix on **20, 22, and 24** for every PR; the release workflow builds on the `.nvmrc` version so shipped artifacts match what maintainers develop on
+- `package.json` also has a `volta` block that pins Volta users to a specific patch version
+
+Bumping the policy: change all four (`engines`, `.nvmrc`, `.node-version`, the CI matrix in `.github/workflows/ci.yml`) and mention it in the release notes.
+
 ## Prerequisites
 
 ```
-node --version   # 18+ (for the build scripts)
-npm --version    # any recent
+node --version   # 20, 22, or 24
+npm --version    # 10+
 ```
+
+Use `nvm use` (or `fnm use`, `volta`) in the project dir to auto-switch to the pinned version.
 
 ## Setup
 

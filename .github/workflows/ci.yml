@@ -14,7 +14,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: ["18", "20"]
+        node: ["20", "22", "24"]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -70,8 +70,8 @@ jobs:
             done
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Upload CI artifacts (Node 20 only)
-        if: matrix.node == '20'
+      - name: Upload CI artifacts (Node 22 only)
+        if: matrix.node == '22'
         uses: actions/upload-artifact@v4
         with:
           name: cookies-kitchen-ci-${{ github.event.pull_request.number || github.sha }}

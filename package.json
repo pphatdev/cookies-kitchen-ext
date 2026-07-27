@@ -4,6 +4,13 @@
   "private": true,
   "description": "Chrome/Edge/Brave/Firefox extension (MV3) to export and import browser cookies as JSON.",
   "type": "module",
+  "engines": {
+    "node": "^20.0.0 || ^22.0.0 || ^24.0.0",
+    "npm": ">=10.0.0"
+  },
+  "volta": {
+    "node": "22.11.0"
+  },
   "scripts": {
     "validate": "node scripts/validate.mjs",
     "build:css": "tailwindcss -i ./src/styles/input.css -o ./popup.css",
