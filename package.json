@@ -5,6 +5,7 @@
   "description": "Chrome/Edge/Brave/Firefox extension (MV3) to export and import browser cookies as JSON.",
   "type": "module",
   "scripts": {
+    "validate": "node scripts/validate.mjs",
     "build:css": "tailwindcss -i ./src/styles/input.css -o ./popup.css",
     "watch:css": "tailwindcss -i ./src/styles/input.css -o ./popup.css --watch",
     "build:chromium": "npm run build:css && node build.mjs chromium",

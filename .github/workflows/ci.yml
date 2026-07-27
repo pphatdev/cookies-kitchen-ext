@@ -1,0 +1,79 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main, master]
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build & validate (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ["18", "20"]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node ${{ matrix.node }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate manifests
+        run: npm run validate
+
+      - name: Build all targets
+        run: npm run build
+
+      - name: Verify each dist has a manifest.json
+        run: |
+          for target in chromium firefox safari; do
+            if [ ! -f "dist/$target/manifest.json" ]; then
+              echo "::error::dist/$target/manifest.json missing after build"
+              exit 1
+            fi
+          done
+
+      - name: Lint Firefox build with web-ext
+        run: npx --yes web-ext@latest lint --source-dir=dist/firefox --warnings-as-errors=false
+
+      - name: Package zips (dry-run, to catch bad paths)
+        run: |
+          mkdir -p artifacts
+          for target in chromium firefox safari; do
+            cd "dist/$target"
+            zip -qr "../../artifacts/cookies-kitchen-$target-ci.zip" .
+            cd - > /dev/null
+          done
+          ls -la artifacts
+
+      - name: Report bundle sizes
+        run: |
+          {
+            echo "### Bundle sizes"
+            echo ""
+            echo "| Target | Folder | Zip |"
+            echo "|---|---|---|"
+            for target in chromium firefox safari; do
+              folder=$(du -sh "dist/$target" | cut -f1)
+              zip_size=$(du -h "artifacts/cookies-kitchen-$target-ci.zip" | cut -f1)
+              echo "| \`$target\` | $folder | $zip_size |"
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload CI artifacts (Node 20 only)
+        if: matrix.node == '20'
+        uses: actions/upload-artifact@v4
+        with:
+          name: cookies-kitchen-ci-${{ github.event.pull_request.number || github.sha }}
+          path: artifacts/*.zip
+          retention-days: 7

@@ -49,6 +49,24 @@ Grab a prebuilt zip from the [Releases page](../../releases) — one per browser
 
 Unzip and follow the per-browser install steps below. No `npm install` required for consumers — the build is already inside the zip.
 
+## Continuous integration
+
+Every PR and every push to `main` runs [`.github/workflows/ci.yml`](.github/workflows/ci.yml):
+
+1. Installs deps against Node 18 and Node 20
+2. `npm run validate` — checks both manifests parse, have MV3 shape, list `cookies`+`host_permissions`, and every referenced file exists
+3. `npm run build` — Tailwind CSS + all three targets
+4. `web-ext lint` on the Firefox build
+5. Packages each `dist/` into a zip (uploaded as a PR artifact, 7-day retention)
+6. Reports folder / zip sizes to the run summary
+
+Run the same checks locally:
+
+```powershell
+npm run validate
+npm run build
+```
+
 ## Cutting a release (maintainer)
 
 ```powershell
