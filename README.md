@@ -1,6 +1,16 @@
+<p align="center">
+  <img src="icons/cover.png" alt="Cookies Kitchen" width="720" />
+</p>
+
 # Cookies Kitchen
 
 Cross-browser extension (Manifest V3) to **export** and **import** browser cookies as JSON. Backup sessions, move cookies between profiles, or share a test session with a teammate.
+
+## Screenshot
+
+<p align="center">
+  <img src="icons/screenshot.png" alt="Cookies Kitchen popup in Chrome on google.com" width="420" />
+</p>
 
 ## Features
 
@@ -28,12 +38,73 @@ Cross-browser extension (Manifest V3) to **export** and **import** browser cooki
 | **Firefox / Nightly / DE** | `manifest.firefox.json` | Uses `background.scripts` (Nightly disables MV3 SW by default). **Must grant host permission per site** — see below. |
 | **Safari (macOS / iOS)** | `manifest.json` | Requires Xcode + `safari-web-extension-converter` on macOS |
 
+## Download a release
+
+Grab a prebuilt zip from the [Releases page](../../releases) — one per browser family:
+
+- `cookies-kitchen-chromium-vX.Y.Z.zip` — Chrome, Edge, Brave, Opera, Vivaldi, Arc
+- `cookies-kitchen-firefox-vX.Y.Z.zip` — Firefox regular / Nightly / Developer Edition
+- `cookies-kitchen-safari-vX.Y.Z.zip` — source folder for `xcrun safari-web-extension-converter`
+- `SHA256SUMS.txt` — verify integrity with `sha256sum -c SHA256SUMS.txt`
+
+Unzip and follow the per-browser install steps below. No `npm install` required for consumers — the build is already inside the zip.
+
+## Continuous integration
+
+Every PR and every push to `main` runs [`.github/workflows/ci.yml`](.github/workflows/ci.yml):
+
+1. Installs deps against Node 20, 22, and 24 (matrix)
+2. `npm run validate` — checks both manifests parse, have MV3 shape, list `cookies`+`host_permissions`, and every referenced file exists
+3. `npm run build` — Tailwind CSS + all three targets
+4. `web-ext lint` on the Firefox build
+5. Packages each `dist/` into a zip (uploaded as a PR artifact, 7-day retention)
+6. Reports folder / zip sizes to the run summary
+
+Run the same checks locally:
+
+```powershell
+npm run validate
+npm run build
+```
+
+## Cutting a release (maintainer)
+
+```powershell
+# Bump manifest.json + manifest.firefox.json version, commit, then:
+git tag v1.0.1
+git push origin v1.0.1
+```
+
+The [`Release` workflow](.github/workflows/release.yml) fires on tags matching `v*`, builds Chromium/Firefox/Safari artifacts, syncs the manifest version to the tag, computes SHA-256, and publishes them as GitHub Release assets with auto-generated release notes. It can also be triggered manually from the Actions tab.
+
+## Node.js support policy
+
+| Version | Role in this project | Notes |
+|---|---|---|
+| **Node 20** (Iron LTS) | Supported minimum | End of Maintenance LTS April 2026 |
+| **Node 22** (Jod LTS) | **Recommended** — pinned in `.nvmrc` and `.node-version`; used by the release workflow | Active LTS |
+| **Node 24** | Supported | Current line |
+| Node 18 and older | **Not supported** | EOL |
+| Odd-numbered non-LTS (23, 25, …) | Not tested | May work; no support |
+
+Enforcement:
+
+- [`package.json` `engines`](package.json) declares `node: ^20 || ^22 || ^24`, `npm: >=10`
+- [`.npmrc`](.npmrc) sets `engine-strict=true` so `npm install` on an unsupported Node **fails** rather than warns
+- [`.nvmrc`](.nvmrc) / [`.node-version`](.node-version) pin the recommended local version (22) for `nvm`, `fnm`, `volta`, and `asdf`
+- CI runs the full test matrix on **20, 22, and 24** for every PR; the release workflow builds on the `.nvmrc` version so shipped artifacts match what maintainers develop on
+- `package.json` also has a `volta` block that pins Volta users to a specific patch version
+
+Bumping the policy: change all four (`engines`, `.nvmrc`, `.node-version`, the CI matrix in `.github/workflows/ci.yml`) and mention it in the release notes.
+
 ## Prerequisites
 
 ```
-node --version   # 18+ (for the build scripts)
-npm --version    # any recent
+node --version   # 20, 22, or 24
+npm --version    # 10+
 ```
+
+Use `nvm use` (or `fnm use`, `volta`) in the project dir to auto-switch to the pinned version.
 
 ## Setup
 

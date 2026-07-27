@@ -1,0 +1,81 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag (e.g. v1.0.1)"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build and publish
+    runs-on: ubuntu-latest
+    env:
+      TAG: ${{ github.event.inputs.tag || github.ref_name }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node (pinned via .nvmrc)
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Sync manifest version to ${{ env.TAG }}
+        run: |
+          VERSION="${TAG#v}"
+          echo "Setting manifest version to ${VERSION}"
+          sed -i "s/\"version\": *\"[^\"]*\"/\"version\": \"${VERSION}\"/" manifest.json manifest.firefox.json
+
+      - name: Build all targets
+        run: npm run build
+
+      - name: Package zips per browser
+        run: |
+          mkdir -p artifacts
+          cd dist/chromium && zip -r "../../artifacts/cookies-kitchen-chromium-${TAG}.zip" . && cd -
+          cd dist/firefox  && zip -r "../../artifacts/cookies-kitchen-firefox-${TAG}.zip"  . && cd -
+          cd dist/safari   && zip -r "../../artifacts/cookies-kitchen-safari-${TAG}.zip"   . && cd -
+          ls -la artifacts
+
+      - name: Compute SHA-256 checksums
+        run: |
+          cd artifacts
+          sha256sum *.zip > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - name: Create / update GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG }}
+          name: Cookies Kitchen ${{ env.TAG }}
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          files: |
+            artifacts/cookies-kitchen-chromium-${{ env.TAG }}.zip
+            artifacts/cookies-kitchen-firefox-${{ env.TAG }}.zip
+            artifacts/cookies-kitchen-safari-${{ env.TAG }}.zip
+            artifacts/SHA256SUMS.txt
+          body: |
+            ## Downloads
+
+            Pick the zip for your browser:
+
+            | Browser | File | Install |
+            |---|---|---|
+            | Chrome / Edge / Brave / Opera / Vivaldi / Arc | `cookies-kitchen-chromium-${{ env.TAG }}.zip` | Unzip → `chrome://extensions` → **Developer mode** → **Load unpacked** → pick the folder |
+            | Firefox / Nightly / Developer Edition | `cookies-kitchen-firefox-${{ env.TAG }}.zip` | Unzip → `about:debugging#/runtime/this-firefox` → **Load Temporary Add-on** → pick `manifest.json`. Then **Manage Extension → Permissions → Access your data for all websites**. |
+            | Safari (macOS / iOS) | `cookies-kitchen-safari-${{ env.TAG }}.zip` | Unzip → `xcrun safari-web-extension-converter <folder>` on macOS |
+
+            Verify with `sha256sum -c SHA256SUMS.txt`.
