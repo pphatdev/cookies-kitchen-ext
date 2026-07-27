@@ -168,8 +168,17 @@
   }
 }
 @layer utilities {
+  .pointer-events-none {
+    pointer-events: none;
+  }
   .m-0 {
     margin: 0px;
+  }
+  .-mx-3\.5 {
+    margin-inline: calc(var(--spacing) * -3.5);
+  }
+  .-mt-3\.5 {
+    margin-top: calc(var(--spacing) * -3.5);
   }
   .mt-1\.5 {
     margin-top: calc(var(--spacing) * 1.5);
@@ -183,8 +192,14 @@
   .mb-2\.5 {
     margin-bottom: calc(var(--spacing) * 2.5);
   }
+  .mb-3 {
+    margin-bottom: calc(var(--spacing) * 3);
+  }
   .ml-1 {
     margin-left: var(--spacing);
+  }
+  .block {
+    display: block;
   }
   .flex {
     display: flex;
@@ -200,6 +215,9 @@
   }
   .inline-flex {
     display: inline-flex;
+  }
+  .h-auto {
+    height: auto;
   }
   .min-h-8 {
     min-height: calc(var(--spacing) * 8);
@@ -261,9 +279,17 @@
   .rounded-md {
     border-radius: var(--radius-md);
   }
+  .rounded-t-\[13px\] {
+    border-top-left-radius: 13px;
+    border-top-right-radius: 13px;
+  }
   .border {
     border-style: var(--tw-border-style);
     border-width: 1px;
+  }
+  .border-b {
+    border-bottom-style: var(--tw-border-style);
+    border-bottom-width: 1px;
   }
   .border-l-\[3px\] {
     border-left-style: var(--tw-border-style);
@@ -271,6 +297,18 @@
   }
   .border-border {
     border-color: hsl(var(--border));
+  }
+  .border-border\/50 {
+    border-color: hsl(var(--border));
+    @supports (color: color-mix(in lab, red, red)) {
+      border-color: color-mix(in oklab, hsl(var(--border)) 50%, transparent);
+    }
+  }
+  .border-border\/60 {
+    border-color: hsl(var(--border));
+    @supports (color: color-mix(in lab, red, red)) {
+      border-color: color-mix(in oklab, hsl(var(--border)) 60%, transparent);
+    }
   }
   .border-destructive\/40 {
     border-color: hsl(var(--destructive));
@@ -289,6 +327,9 @@
   }
   .bg-transparent {
     background-color: transparent;
+  }
+  .object-cover {
+    object-fit: cover;
   }
   .p-1\.5 {
     padding: calc(var(--spacing) * 1.5);
@@ -411,6 +452,10 @@
   .outline-none {
     --tw-outline-style: none;
     outline-style: none;
+  }
+  .select-none {
+    -webkit-user-select: none;
+    user-select: none;
   }
   @media (hover: hover) {
     .hover\:border-destructive:hover {
