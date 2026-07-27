@@ -8,6 +8,8 @@ import {
     emptyScopeMessage,
     initTheme,
     toggleTheme,
+    getFormat,
+    setFormat,
 } from "./ui.js";
 import { isRestrictedUrl } from "./scope.js";
 import {
@@ -15,7 +17,8 @@ import {
     importCookie,
     removeCookie,
 } from "./cookies.js";
-import { serialize, parseImportFile, buildFilename } from "./serialize.js";
+import { FORMATS, encode, decode } from "./formats.js";
+import { buildFilename } from "./serialize.js";
 
 let currentTab = null;
 
@@ -46,6 +49,7 @@ async function init() {
     }
 
     highlightActiveStat(getScope());
+    setFormat(getFormat());
     wireEvents();
     setStatus("ready");
     refreshCounts();
@@ -59,11 +63,17 @@ function wireEvents() {
     els.themeToggle.addEventListener("click", toggleTheme);
 
     document.querySelectorAll('input[name="scope"]').forEach((input) => {
-        input.addEventListener("change", () => highlightActiveStat(getScope()));
+        input.addEventListener("change", () => {
+            highlightActiveStat(getScope());
+        });
     });
 
     els.stats.forEach((btn) => {
         btn.addEventListener("click", () => setScope(btn.dataset.scope));
+    });
+
+    els.formatPills.forEach((btn) => {
+        btn.addEventListener("click", () => setFormat(btn.dataset.format));
     });
 }
 
@@ -81,6 +91,18 @@ async function refreshCounts() {
     );
 }
 
+function encodeCurrent(cookies) {
+    const format = getFormat();
+    return {
+        format,
+        content: encode(format, cookies, {
+            source: currentTab?.url,
+            scope: getScope(),
+            pretty: els.pretty.checked,
+        }),
+    };
+}
+
 async function onExport() {
     try {
         els.exportBtn.disabled = true;
@@ -91,19 +113,16 @@ async function onExport() {
             setStatus(emptyScopeMessage(scope, currentTab?.url), "err");
             return;
         }
-        const json = serialize(cookies, {
-            source: currentTab?.url,
-            scope,
-            pretty: els.pretty.checked,
-        });
-        const blob = new Blob([json], { type: "application/json" });
+        const { format, content } = encodeCurrent(cookies);
+        const { ext, mime, label } = FORMATS[format];
+        const blob = new Blob([content], { type: mime });
         const url = URL.createObjectURL(blob);
         await chrome.downloads.download({
             url,
-            filename: buildFilename(scope, currentTab?.url),
+            filename: buildFilename(scope, currentTab?.url, ext),
             saveAs: true,
         });
-        setStatus(`exported ${cookies.length} cookie(s)`, "ok");
+        setStatus(`exported ${cookies.length} cookie(s) as ${label}`, "ok");
     } catch (err) {
         setStatus(`export failed: ${err.message}`, "err");
     } finally {
@@ -120,13 +139,10 @@ async function onCopy() {
             setStatus(emptyScopeMessage(scope, currentTab?.url), "err");
             return;
         }
-        const json = serialize(cookies, {
-            source: currentTab?.url,
-            scope,
-            pretty: els.pretty.checked,
-        });
-        await navigator.clipboard.writeText(json);
-        setStatus(`copied ${cookies.length} cookie(s) to clipboard`, "ok");
+        const { format, content } = encodeCurrent(cookies);
+        const { label } = FORMATS[format];
+        await navigator.clipboard.writeText(content);
+        setStatus(`copied ${cookies.length} cookie(s) as ${label}`, "ok");
     } catch (err) {
         setStatus(`copy failed: ${err.message}`, "err");
     } finally {
@@ -139,13 +155,21 @@ async function onImportFile(event) {
     if (!file) return;
     try {
         setStatus(`reading ${file.name}…`, "info");
-        const cookies = parseImportFile(await file.text());
+        const text = await file.text();
+        const { format, cookies } = decode(text);
         const overwrite = els.overwrite.checked;
+
+        // Header/incomplete cookies need a fallback context from the active tab.
+        const tabHost = safeUrl(currentTab?.url);
+        const needsFallback = format === "header";
 
         let ok = 0;
         let failed = 0;
-        for (const c of cookies) {
+        for (const raw of cookies) {
             try {
+                const c = needsFallback && tabHost
+                    ? { ...raw, domain: raw.domain || tabHost.hostname, path: raw.path || "/", secure: raw.secure ?? (tabHost.protocol === "https:") }
+                    : raw;
                 await importCookie(c, { overwrite });
                 ok++;
             } catch {
@@ -153,7 +177,7 @@ async function onImportFile(event) {
             }
         }
         setStatus(
-            `imported ${ok}, failed ${failed}`,
+            `imported ${ok} (${FORMATS[format].label}), failed ${failed}`,
             failed ? "err" : "ok"
         );
         refreshCounts();
@@ -161,6 +185,14 @@ async function onImportFile(event) {
         setStatus(`import failed: ${err.message}`, "err");
     } finally {
         event.target.value = "";
+    }
+}
+
+function safeUrl(u) {
+    try {
+        return u ? new URL(u) : null;
+    } catch {
+        return null;
     }
 }
 

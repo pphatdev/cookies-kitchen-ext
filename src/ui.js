@@ -17,7 +17,21 @@ export const els = {
         all: document.getElementById("count-all"),
     },
     stats: document.querySelectorAll(".stat"),
+    formatPills: document.querySelectorAll(".format-pill"),
 };
+
+let currentFormat = "json";
+
+export function getFormat() {
+    return currentFormat;
+}
+
+export function setFormat(format) {
+    currentFormat = format;
+    els.formatPills.forEach((btn) => {
+        btn.dataset.active = btn.dataset.format === format ? "true" : "false";
+    });
+}
 
 export function getScope() {
     return document.querySelector('input[name="scope"]:checked').value;
@@ -73,29 +87,41 @@ export function emptyScopeMessage(scope, tabUrl) {
 const THEME_KEY = "cookies-kitchen:theme";
 
 export function initTheme() {
+    let theme = "auto";
     try {
         const saved = localStorage.getItem(THEME_KEY);
-        if (saved === "light" || saved === "dark") {
-            document.body.dataset.theme = saved;
-        }
+        if (saved === "light" || saved === "dark") theme = saved;
+    } catch {
+        /* ignore */
+    }
+    applyTheme(theme);
+}
+
+export function toggleTheme() {
+    // Flip based on what's actually rendered, not the stored setting —
+    // so "auto" resolves to its visible mode first, then flips.
+    const next = resolvedTheme() === "dark" ? "light" : "dark";
+    applyTheme(next);
+    try {
+        localStorage.setItem(THEME_KEY, next);
     } catch {
         /* ignore */
     }
 }
 
-export function toggleTheme() {
-    const current = document.body.dataset.theme;
-    const next =
-        current === "dark"
-            ? "light"
-            : current === "light"
-                ? "auto"
-                : "dark";
-    document.body.dataset.theme = next;
-    try {
-        if (next === "auto") localStorage.removeItem(THEME_KEY);
-        else localStorage.setItem(THEME_KEY, next);
-    } catch {
-        /* ignore */
+function resolvedTheme() {
+    const set = document.body.dataset.theme;
+    if (set === "light" || set === "dark") return set;
+    return window.matchMedia?.("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light";
+}
+
+function applyTheme(theme) {
+    document.body.dataset.theme = theme;
+    if (els.themeToggle) {
+        const shown = resolvedTheme();
+        els.themeToggle.title =
+            shown === "dark" ? "Dark — click for light" : "Light — click for dark";
     }
 }
