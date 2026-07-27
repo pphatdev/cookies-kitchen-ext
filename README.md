@@ -1,6 +1,16 @@
+<p align="center">
+  <img src="icons/cover.png" alt="Cookies Kitchen" width="720" />
+</p>
+
 # Cookies Kitchen
 
 Cross-browser extension (Manifest V3) to **export** and **import** browser cookies as JSON. Backup sessions, move cookies between profiles, or share a test session with a teammate.
+
+## Screenshot
+
+<p align="center">
+  <img src="icons/screenshot.png" alt="Cookies Kitchen popup in Chrome on google.com" width="420" />
+</p>
 
 ## Features
 
@@ -27,6 +37,27 @@ Cross-browser extension (Manifest V3) to **export** and **import** browser cooki
 | **Kiwi Browser** | `manifest.json` | Android Chromium |
 | **Firefox / Nightly / DE** | `manifest.firefox.json` | Uses `background.scripts` (Nightly disables MV3 SW by default). **Must grant host permission per site** — see below. |
 | **Safari (macOS / iOS)** | `manifest.json` | Requires Xcode + `safari-web-extension-converter` on macOS |
+
+## Download a release
+
+Grab a prebuilt zip from the [Releases page](../../releases) — one per browser family:
+
+- `cookies-kitchen-chromium-vX.Y.Z.zip` — Chrome, Edge, Brave, Opera, Vivaldi, Arc
+- `cookies-kitchen-firefox-vX.Y.Z.zip` — Firefox regular / Nightly / Developer Edition
+- `cookies-kitchen-safari-vX.Y.Z.zip` — source folder for `xcrun safari-web-extension-converter`
+- `SHA256SUMS.txt` — verify integrity with `sha256sum -c SHA256SUMS.txt`
+
+Unzip and follow the per-browser install steps below. No `npm install` required for consumers — the build is already inside the zip.
+
+## Cutting a release (maintainer)
+
+```powershell
+# Bump manifest.json + manifest.firefox.json version, commit, then:
+git tag v1.0.1
+git push origin v1.0.1
+```
+
+The [`Release` workflow](.github/workflows/release.yml) fires on tags matching `v*`, builds Chromium/Firefox/Safari artifacts, syncs the manifest version to the tag, computes SHA-256, and publishes them as GitHub Release assets with auto-generated release notes. It can also be triggered manually from the Actions tab.
 
 ## Prerequisites
 
